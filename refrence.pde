@@ -4,7 +4,7 @@ void refrence(){
   color s = g.strokeColor;
   
   pushMatrix();
-    translate(width/100, height/100);
+    translate(1000, 1000, 1000);
     fill(255,0,0);
     stroke(255,0,0);
     line(0,0,60,0);

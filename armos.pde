@@ -1,8 +1,18 @@
+import peasy.*;
+import peasy.org.apache.commons.math.*;
+import peasy.org.apache.commons.math.geometry.*;
+
 PVector target=new PVector();
 PVector tip=new PVector();
+PeasyCam cam;
+
+void settings(){
+  size(1400, 1300, P3D);
+}
+
 
 void setup(){
-  size(1400, 1300);
+  cam = new PeasyCam(this, 400);
   
   target.x=500;
   target.y=700;
@@ -17,7 +27,7 @@ void setup(){
 //PVector controlRot;
 
 
-float[] rotors = new float[3];
+float[] rotors = new float[4];
 int plank1;
 int plank2;
 int plank3;
@@ -28,7 +38,11 @@ void draw(){
   
   
   background(0);
+  fill(255);
+  box(10000);
   refrence();
+  motion();
+  lights();
   
   //findbest();
   
@@ -37,35 +51,51 @@ void draw(){
   rotors[1] = map(mouseY, 0, height, 0, 360);
   }
   if(AUTO){
-    target.set(mouseX, mouseY);
+    target.set(x, y, z);
     findbest();
   }
+  if(HOVER){
+    target.set(x, y, z);
+  }
   
-  
+  cam.beginHUD();
+  fill(0);
   text(rotors[0], 200, 100); 
-  text(rotors[1], 200, 200);
-  text(rotors[2], 200, 300);
-  text(score(), 200, 400);
+  text(rotors[1], 200, 120);
+  text(rotors[2], 200, 140);
+  text(rotors[3], 200, 160);
+  text(score(), 200, 200);
+  text(BestScore, 200, 220);
+  text(x+"  "+y+"  "+z, 200, 270);
+  cam.endHUD();
   
   pushMatrix();
-    translate(width/50, height/2);
+    translate(0, 500, 0);
+    //if(BestScore<2)
     ARM();
   popMatrix();
-  
-  ellipse(tip.x, tip.y, 20, 20);
-  ellipse(target.x, target.y, 20, 20);
+  pushMatrix();
+  translate(tip.x, tip.y, tip.z);
+  box(30);
+  popMatrix();
+  pushMatrix();
+  translate(target.x, target.y, target.z);
+  box(30);
+  popMatrix();
 }
 
 void ARM2(){
   pushMatrix();
-    translate(width/50, height/2);
-  rotate(radians(rotors[0]));
+    translate(0, 500, 0);
+    
+  rotateY(radians(rotors[0]));
+  rotateZ(radians(rotors[1]));
   translate(plank1, 0);
-  rotate(radians(rotors[1]));
+  rotateZ(radians(rotors[2]));
   translate(plank2, 0);
-  rotate(radians(rotors[2]));
+  rotateZ(radians(rotors[3]));
   translate(plank3, 0);
-  tip.set(screenX(0,0),screenY(0,0));
+  tip.set(modelX(0,0,0),modelY(0,0,0), modelZ(0,0,0));
   popMatrix();
 }
 
@@ -77,69 +107,79 @@ int ARMRange(){
 
 void ARM(){
   strokeWeight(8);
-
-  rect(0, -100, -50, 100);
-  rotate(radians(rotors[0]));
+  
+  pushMatrix();
+  translate(0, 25, 0);
+  box(200, 50, 100);
+  popMatrix();
+  rotateY(radians(rotors[0]));
+  rotateZ(radians(rotors[1]));
   stroke(255,0,0);
   line(0, 0, plank1, 0);
+  box(10);
   translate(plank1, 0);
-  rotate(radians(rotors[1]));
+  rotateZ(radians(rotors[2]));
   stroke(0,255,0);
   line(0, 0, plank2, 0);
+  box(10);
   translate(plank2, 0);
-  rotate(radians(rotors[2]));
+  rotateZ(radians(rotors[3]));
   stroke(0,0,255);
   line(0, 0, plank3, 0);
   translate(plank3, 0);
-  tip.set(screenX(0,0),screenY(0,0));
+  tip.set(modelX(0,0,0),modelY(0,0,0), modelZ(0,0,0));
 }
 
-int score(){
-  return int(dist(tip.x, tip.y, target.x, target.y));
+float score(){
+  return dist(tip.x, tip.y, tip.z, target.x, target.y, target.z);
 }
 
 boolean Manual = false;
 boolean AUTO = false;
+boolean HOVER = false;
+int x = 0;
+int y = 0;
+int z = 0;
+byte xV=0;
+byte yV=0;
+byte zV=0;
 
 void keyPressed(){
-  if( key == 'w')findbest();
+  if( key == 'r')findbest();
   if( key == 'e')Manual=!Manual;
-  if( key == 'r')AUTO=!AUTO;
-  if( key == 't')target.set(mouseX, mouseY);
+  if( key == 'g')AUTO=!AUTO;
+  if( key == 'h')HOVER=!HOVER;
+  if( key == 't')target.set(x, y, z);
+  if( key == 'y')BestScore=3000;
+  
+  
+  if( key == 'f')yV=-1;
+  if( key == 'c')yV=1;
+  if( key == 'w')zV=-1;
+  if( key == 's')zV=1;
+  if( key == 'a')xV=-1;
+  if( key == 'd')xV=1;
   
 }
 
-
-int loops= 0;
-void findbest(){findbest(10);}
-
-void findbest(float precission){
-  int r=0;
-  loops = 0;
-  float BestScore = 3000;
-  int BestAngle=0;
-  
-  while(BestScore>precission){
-    for(int a = 0; a<360; a++){
-      loops++;
-      if(loops>1080)break;
-      rotors[r]=a;
-      ARM2();
-      if(score()<BestScore){
-        BestScore = score();
-        BestAngle = a;
-      }
-      
-    }
-    if(loops>1080)break;
-    
-    rotors[r]=BestAngle;
-    r++;
-    if(r==rotors.length)r=0;
-  }
-  
-  
+void keyReleased(){
+  if( key == 'f')yV=0;
+  if( key == 'c')yV=0;
+  if( key == 'w')zV=0;
+  if( key == 's')zV=0;
+  if( key == 'a')xV=0;
+  if( key == 'd')xV=0;
 }
-  
 
-//int 
+void motion(){
+  x+=xV;
+  y+=yV;
+  z+=zV;
+}
+
+
+
+/*void mouseWheel(MouseEvent e){
+  float ev = e.getCount();
+  scrool+=ev;
+}*/
