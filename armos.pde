@@ -17,9 +17,9 @@ void setup(){
   target.x=500;
   target.y=700;
   
-  plank1 = 400;
-  plank2 = 600;
-  plank3 = 100;
+  planks[0] = 400;
+  planks[1] = 600;
+  planks[2] = 100;
   //noLoop();
 }
 
@@ -28,9 +28,7 @@ void setup(){
 
 
 float[] rotors = new float[4];
-int plank1;
-int plank2;
-int plank3;
+int[] planks = new int[3];
 
 
 
@@ -66,7 +64,8 @@ void draw(){
   text(rotors[3], 200, 160);
   text(score(), 200, 200);
   text(BestScore, 200, 220);
-  text(x+"  "+y+"  "+z, 200, 270);
+  text(x+"  "+y+"  "+z, 200, 300);
+  text(driver, 200, 320);
   cam.endHUD();
   
   pushMatrix();
@@ -90,17 +89,21 @@ void ARM2(){
     
   rotateY(radians(rotors[0]));
   rotateZ(radians(rotors[1]));
-  translate(plank1, 0);
+  translate(planks[0], 0);
   rotateZ(radians(rotors[2]));
-  translate(plank2, 0);
+  translate(planks[1], 0);
   rotateZ(radians(rotors[3]));
-  translate(plank3, 0);
+  translate(planks[2], 0);
   tip.set(modelX(0,0,0),modelY(0,0,0), modelZ(0,0,0));
   popMatrix();
 }
 
 int ARMRange(){
-  return plank1 + plank2;
+  int sum=0;
+  for (int len : planks){
+    sum+=len;
+  }
+  return sum;
 }
 
 
@@ -115,18 +118,18 @@ void ARM(){
   rotateY(radians(rotors[0]));
   rotateZ(radians(rotors[1]));
   stroke(255,0,0);
-  line(0, 0, plank1, 0);
+  line(0, 0, planks[0], 0);
   box(10);
-  translate(plank1, 0);
+  translate(planks[0], 0);
   rotateZ(radians(rotors[2]));
   stroke(0,255,0);
-  line(0, 0, plank2, 0);
+  line(0, 0, planks[1], 0);
   box(10);
-  translate(plank2, 0);
+  translate(planks[1], 0);
   rotateZ(radians(rotors[3]));
   stroke(0,0,255);
-  line(0, 0, plank3, 0);
-  translate(plank3, 0);
+  line(0, 0, planks[2], 0);
+  translate(planks[2], 0);
   tip.set(modelX(0,0,0),modelY(0,0,0), modelZ(0,0,0));
 }
 
@@ -150,7 +153,11 @@ void keyPressed(){
   if( key == 'g')AUTO=!AUTO;
   if( key == 'h')HOVER=!HOVER;
   if( key == 't')target.set(x, y, z);
-  if( key == 'y')BestScore=3000;
+  if( key == 'z')rotors[3]=0;
+  if( key == 'x')driver++;
+  if(driver>3)driver =0;
+  
+  //if( key == 'y')BestScore=3000;
   
   
   if( key == 'f')yV=-1;
